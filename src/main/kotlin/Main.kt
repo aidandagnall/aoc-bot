@@ -33,8 +33,9 @@ suspend fun main() {
     // start thread to update leaderboard in background
     Thread {
         runBlocking {
-            // update leaderboard when bot starts
+
             updateLeaderboard(kord)
+
             var time = Clock.System.now()
             while (true) {
                 if (time.until(Clock.System.now(), DateTimeUnit.MINUTE) >= 15) {
@@ -48,6 +49,7 @@ suspend fun main() {
         }
     }.start()
 
+    // create /leaderboard command
     kord.createGuildChatInputCommand(
         guildId = Snowflake(1044932088287207457),
         name = "leaderboard",
@@ -66,6 +68,7 @@ suspend fun main() {
         }
     }
 
+    // listen for slash commands
     kord.on<GuildChatInputCommandInteractionCreateEvent> {
         val response = interaction.deferPublicResponse()
         val command = interaction.command

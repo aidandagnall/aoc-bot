@@ -1,6 +1,6 @@
 # Advent of Code Discord Bot
 
-A simple discord bot written in [Kord](https://github.com/kordlib/kord) to post updates from an Advent of Code private leaderboard.
+A simple discord bot written using [Kord](https://github.com/kordlib/kord) to post updates from an Advent of Code private leaderboard.
 
 ## Getting Started
 

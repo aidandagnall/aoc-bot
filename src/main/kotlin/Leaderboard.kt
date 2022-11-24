@@ -61,7 +61,7 @@ data class Leaderboard(
                 positionInfo + scoreInfo + name
             }.joinToString("")
 
-        generator.loadHtml(HTML_FOOTERS + userRows + HTML_FOOTERS)
+        generator.loadHtml(HTML_HEADERS + userRows + HTML_FOOTERS)
         generator.saveAsImage(path)
 
         // image seems to have a column of white pixels on the right edge

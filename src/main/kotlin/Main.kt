@@ -8,7 +8,6 @@ import dev.kord.core.on
 import dev.kord.rest.NamedFile
 import dev.kord.rest.builder.interaction.int
 import dev.kord.rest.builder.interaction.string
-import gui.ava.html.image.generator.HtmlImageGenerator
 import io.github.cdimascio.dotenv.dotenv
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -21,7 +20,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
-import kotlinx.datetime.Instant
 import kotlinx.datetime.until
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -98,7 +96,7 @@ suspend fun main() {
 
 suspend fun updateLeaderboard(kord: Kord) {
 
-    val filename: String = "leaderboard.json"
+    val filename = "leaderboard.json"
 
     val oldLeaderboard = Leaderboard.fromFile()
 
@@ -119,14 +117,15 @@ suspend fun updateLeaderboard(kord: Kord) {
 
     val newLeaderboard = Json.decodeFromString<Leaderboard>(json)
 
+    // if no channel defined then don't print updates
+    if (dotenv()["CHANNEL"] == "")
+        return
+
     // get the channel to post updates to
     val channel = runBlocking {
         kord.getChannel(Snowflake(dotenv()["CHANNEL"]))
     } as GuildMessageChannel? ?: return
 
-    // if no channel defined then don't print updates
-    if (dotenv()["CHANNEL"] == "")
-        return
 
     newLeaderboard.members.forEach { (id, member) ->
 

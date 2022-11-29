@@ -68,6 +68,10 @@ suspend fun main() {
         }
     }
 
+    val cooldown = dotenv()["COOLDOWN"]?.let {
+        if (it == "") null
+        else it.toInt()
+    }
     var lastLeaderboardCommand = Clock.System.now()
     // listen for slash commands
     kord.on<GuildChatInputCommandInteractionCreateEvent> {
@@ -75,9 +79,9 @@ suspend fun main() {
         val command = interaction.command
 
         val timeSinceLastCommand = lastLeaderboardCommand.until(Clock.System.now(), DateTimeUnit.SECOND)
-        if (timeSinceLastCommand < 60) {
+        if (cooldown != null && timeSinceLastCommand < cooldown) {
             response.respond {
-                content = "Command is on cooldown. Please wait $timeSinceLastCommand seconds"
+                content = "Command is on cooldown. Please wait ${cooldown - timeSinceLastCommand} seconds"
             }
             return@on
         }

@@ -21,6 +21,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.Instant
 import kotlinx.datetime.until
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -51,7 +52,8 @@ suspend fun main() {
 
     // create /leaderboard command
     kord.createGuildChatInputCommand(
-        guildId = Snowflake(1044932088287207457),
+//        guildId = Snowflake(1044932088287207457),
+        guildId = Snowflake(dotenv()["SERVER"]),
         name = "leaderboard",
         description = "Show the live leaderboard (up to 15 minute delay)",
     ) {
@@ -122,26 +124,34 @@ suspend fun updateLeaderboard(kord: Kord) {
         kord.getChannel(Snowflake(dotenv()["CHANNEL"]))
     } as GuildMessageChannel? ?: return
 
-    newLeaderboard.members.forEach { (id, new) ->
+    // if no channel defined then don't print updates
+    if (dotenv()["CHANNEL"] == "")
+        return
 
-        val old = oldLeaderboard.members[id] ?: return@forEach
+    newLeaderboard.members.forEach { (id, member) ->
+
         // if user is not in old leaderboard, don't post updates
-        val oldStars = old.stars
-        val newStars = new.stars
+        oldLeaderboard.members[id] ?: return@forEach
 
-        // if any stars have changed, then post a message
-        // TODO: Update to use timestamp instead, I was being lazy...
-        (1..25).forEach {
-            if (oldStars[it - 1].first != newStars[it - 1].first) {
-                channel.createMessage {
-                    content = "${new.name} has completed Day $it Part 1! ⭐️"
+        // if any stars have been gained in the last 15 minutes, then post a message
+        member.stars.forEach {(p1, p2) ->
+
+            p1?.let {
+                if (it.getStarTS > Clock.System.now().epochSeconds) {
+                    channel.createMessage {
+                        content = "${member.name} has completed Day $it Part 1! ⭐️"
+                    }
                 }
             }
-            if (oldStars[it - 1].second != newStars[it - 1].second) {
-                channel.createMessage {
-                    content = "${new.name} has completed Day $it Part 2! 🌟"
+
+            p2?.let {
+                if (it.getStarTS > Clock.System.now().epochSeconds) {
+                    channel.createMessage {
+                        content = "${member.name} has completed Day $it Part 2! 🌟"
+                    }
                 }
             }
+
         }
     }
 }

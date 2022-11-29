@@ -68,10 +68,21 @@ suspend fun main() {
         }
     }
 
+    var lastLeaderboardCommand = Clock.System.now()
     // listen for slash commands
     kord.on<GuildChatInputCommandInteractionCreateEvent> {
         val response = interaction.deferPublicResponse()
         val command = interaction.command
+
+        val timeSinceLastCommand = lastLeaderboardCommand.until(Clock.System.now(), DateTimeUnit.SECOND)
+        if (timeSinceLastCommand < 60) {
+            response.respond {
+                content = "Command is on cooldown. Please wait $timeSinceLastCommand seconds"
+            }
+            return@on
+        }
+
+        lastLeaderboardCommand = Clock.System.now()
 
         val scoring = when(command.strings["scoring"]) {
             "official" -> Leaderboard.SCORING.OFFICIAL

@@ -39,7 +39,7 @@ data class Leaderboard(
             // ignore users with no score
             .filter { it.getScore(scoring) > 0 }
             // highest score first
-            .sortedByDescending{ it.getScore(scoring) }
+            .sortedWith( compareByDescending<Member> { it.getScore(scoring) }.thenBy { it.name } )
             // take only the requested number of members
             .take(count ?: DEFAULT_LEADERBOARD_SIZE)
             .groupBy { it.getScore(scoring) }
@@ -48,8 +48,7 @@ data class Leaderboard(
         // create the rows for each score
         val userRows = users.mapIndexed { index, sublist ->
                 // create row for each user
-                sublist.sortedBy { it.name }
-                    .mapIndexed { it, member ->
+                sublist.mapIndexed { it, member ->
                     // position and score
                     //   if user is first in this sublist, show pos, otherwise ignore it
                     val position = if (it == 0) {

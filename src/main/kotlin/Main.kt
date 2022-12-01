@@ -18,13 +18,13 @@ import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import kotlinx.datetime.Clock
-import kotlinx.datetime.DateTimeUnit
-import kotlinx.datetime.minus
-import kotlinx.datetime.until
+import kotlinx.datetime.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.io.File
+import java.nio.file.attribute.FileTime
+import kotlin.io.path.getLastModifiedTime
+import kotlin.io.path.setLastModifiedTime
 
 suspend fun main() {
 
@@ -34,9 +34,12 @@ suspend fun main() {
     Thread {
         runBlocking {
 
-            updateLeaderboard(kord)
-
-            var time = Clock.System.now()
+            var time = if (File("leaderboard.json").exists()) {
+                    File("leaderboard.json").toPath()
+                        .getLastModifiedTime()
+                        .toInstant()
+                        .toKotlinInstant()
+                } else Clock.System.now()
             while (true) {
                 if (time.until(Clock.System.now(), DateTimeUnit.MINUTE) >= 15) {
                     time = Clock.System.now()
@@ -126,6 +129,7 @@ suspend fun updateLeaderboard(kord: Kord) {
         { cookie(name = "session", value = dotenv()["COOKIE"]) }.body<String>()
 
     File(filename).writeText(json)
+    File(filename).toPath().setLastModifiedTime(FileTime.from(Clock.System.now().toJavaInstant()))
 
     if (oldLeaderboard == null) {
         return

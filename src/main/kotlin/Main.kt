@@ -14,6 +14,7 @@ import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
+import io.ktor.http.*
 import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -125,8 +126,10 @@ suspend fun updateLeaderboard(kord: Kord) {
 
     // get new leaderboard
     println("Fetching new leaderboard")
-    val json = client.get("https://adventofcode.com/$year/leaderboard/private/view/$code.json")
-        { cookie(name = "session", value = dotenv()["COOKIE"]) }.body<String>()
+    val json = client.get("https://adventofcode.com/$year/leaderboard/private/view/$code.json") {
+        cookie(name = "session", value = dotenv()["COOKIE"])
+        userAgent(dotenv()["AGENT"])
+    }.body<String>()
 
     File(filename).writeText(json)
     File(filename).toPath().setLastModifiedTime(FileTime.from(Clock.System.now().toJavaInstant()))

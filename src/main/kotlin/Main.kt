@@ -20,6 +20,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.minus
 import kotlinx.datetime.until
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -72,7 +73,7 @@ suspend fun main() {
         if (it == "") null
         else it.toInt()
     }
-    var lastLeaderboardCommand = Clock.System.now()
+    var lastLeaderboardCommand = Clock.System.now().minus(cooldown ?: 0, DateTimeUnit.SECOND)
     // listen for slash commands
     kord.on<GuildChatInputCommandInteractionCreateEvent> {
         val response = interaction.deferPublicResponse()

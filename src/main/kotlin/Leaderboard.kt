@@ -34,31 +34,46 @@ data class Leaderboard(
     fun createImage(path: String = "leaderboard.png", count: Int? = DEFAULT_LEADERBOARD_SIZE, scoring: SCORING = SCORING.OFFICIAL) {
         val generator = HtmlImageGenerator()
 
-        // create the rows for each user
-        val userRows = members.values.asSequence()
+        // get list of list of users, with a list for each score
+        val users = members.values.asSequence()
             // ignore users with no score
             .filter { it.getScore(scoring) > 0 }
             // highest score first
             .sortedByDescending{ it.getScore(scoring) }
             // take only the requested number of members
             .take(count ?: DEFAULT_LEADERBOARD_SIZE)
-            .mapIndexed { it, member ->
-                // position and score
-                val positionInfo = """<tr><div class="privboard-row"><td><span class="privboard-position">${it + 1})</span> </td><td style="text-align: right">${member.getScoreFormatted(scoring)}</td>""".trimMargin()
+            .groupBy { it.getScore(scoring) }
+            .values.toList()
 
-                // info of each star
-                val scoreInfo = member.stars.joinToString("") { stars ->
-                    val style = when {
-                        stars == null to null -> "privboard-star-unlocked"
-                        stars.first != null && stars.second == null -> "privboard-star-firstonly"
-                        else -> "privboard-star-both"
+        // create the rows for each score
+        val userRows = users.mapIndexed { index, sublist ->
+                // create row for each user
+                sublist.sortedBy { it.name?.lowercase() }
+                    .mapIndexed { it, member ->
+                    // position and score
+                    //   if user is first in this sublist, show pos, otherwise ignore it
+                    val position = if (it == 0) {
+                        ((0 until index).sumOf { users[it].size } + 1).toString() + ')'
+                    } else {
+                        ""
                     }
-                    """<td><span class="$style">*</span></td>"""
-                }
 
-                val name = """ <td><span class="privboard-name">${member.name ?: "null"}</span></td></div></tr>"""
+                    val positionInfo = """<tr><div class="privboard-row"><td><span class="privboard-position">$position</span> </td><td style="text-align: right">${member.getScoreFormatted(scoring)}</td>""".trimMargin()
 
-                positionInfo + scoreInfo + name
+                    // info of each star
+                    val scoreInfo = member.stars.joinToString("") { stars ->
+                        val style = when {
+                            stars == null to null -> "privboard-star-unlocked"
+                            stars.first != null && stars.second == null -> "privboard-star-firstonly"
+                            else -> "privboard-star-both"
+                        }
+                        """<td><span class="$style">*</span></td>"""
+                    }
+
+                    val name = """ <td><span class="privboard-name">${member.name ?: "null"}</span></td></div></tr>"""
+
+                    positionInfo + scoreInfo + name
+                }.joinToString("")
             }.joinToString("")
 
         generator.loadHtml(HTML_HEADERS + userRows + HTML_FOOTERS)

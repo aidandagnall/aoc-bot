@@ -1,6 +1,7 @@
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.interaction.GuildChatInputCommandInteractionCreateEvent
@@ -80,16 +81,17 @@ suspend fun main() {
     var lastLeaderboardCommand = Clock.System.now().minus(cooldown ?: 0, DateTimeUnit.SECOND)
     // listen for slash commands
     kord.on<GuildChatInputCommandInteractionCreateEvent> {
-        val response = interaction.deferPublicResponse()
-        val command = interaction.command
 
         val timeSinceLastCommand = lastLeaderboardCommand.until(Clock.System.now(), DateTimeUnit.SECOND)
         if (cooldown != null && timeSinceLastCommand < cooldown) {
-            response.respond {
+            interaction.respondEphemeral {
                 content = "Command is on cooldown. Please wait ${cooldown - timeSinceLastCommand} seconds"
             }
             return@on
         }
+
+        val response = interaction.deferPublicResponse()
+        val command = interaction.command
 
         lastLeaderboardCommand = Clock.System.now()
 

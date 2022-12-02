@@ -39,7 +39,7 @@ data class Leaderboard(
             // ignore users with no score
             .filter { it.getScore(scoring) > 0 }
             // highest score first
-            .sortedWith( compareByDescending<Member> { it.getScore(scoring) }.thenBy { it.name } )
+            .sortedWith( compareByDescending<Member> { it.getScore(scoring) }.thenBy(nullsLast()) { it.name } )
             // take only the requested number of members
             .take(count ?: DEFAULT_LEADERBOARD_SIZE)
             .groupBy { it.getScore(scoring) }
@@ -69,7 +69,7 @@ data class Leaderboard(
                         """<td><span class="$style">*</span></td>"""
                     }
 
-                    val name = """ <td><span class="privboard-name">${member.name ?: "null"}</span></td></div></tr>"""
+                    val name = """ <td><span class="privboard-name">${member.name ?: "Anonymous"}</span></td></div></tr>"""
 
                     positionInfo + scoreInfo + name
                 }.joinToString("")

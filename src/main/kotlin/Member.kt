@@ -6,7 +6,7 @@ import kotlinx.serialization.Transient
 
 @Serializable
 data class Member(
-    val name: String?,
+    var name: String?,
     val id: Int,
     @SerialName("stars")
     val starCount: Int,
@@ -23,6 +23,12 @@ data class Member(
     @SerialName("completion_day_level")
     private val completion: Map<String, Map<String, Star>>
 ) {
+
+    init {
+        if (name == null) {
+            name = "anonymous user #$id"
+        }
+    }
 
     @Transient
     val stars = (1..25).map {

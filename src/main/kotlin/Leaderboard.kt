@@ -39,7 +39,7 @@ data class Leaderboard(
             // ignore users with no score
             .filter { it.getScore(scoring) > 0 }
             // highest score first
-            .sortedWith( compareByDescending<Member> { it.getScore(scoring) }.thenBy(nullsLast()) { it.name } )
+            .sortedWith( compareByDescending<Member> { it.getScore(scoring) }.thenBy { it.name } )
             // take only the requested number of members
             .take(count ?: DEFAULT_LEADERBOARD_SIZE)
             .groupBy { it.getScore(scoring) }

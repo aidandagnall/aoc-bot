@@ -102,7 +102,10 @@ data class Leaderboard(
 
         (0 until numberOfImages).forEach {
             val pathNumbered = "leaderboard$it.png"
-            generator.loadHtml(HTML_HEADERS + HEADINGS + userRows.drop( usersPerImage.take(it).sum()).take(usersPerImage[it]).joinToString("") + HTML_FOOTERS)
+            val padding = if (usersPerImage[it] < usersPerImage.max()) {
+                """<tr><div class="privboard-row"><td><span style="color: #0f0f23">$count) </span></td></div><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/></tr>"""
+            } else ""
+            generator.loadHtml(HTML_HEADERS + HEADINGS + userRows.drop(usersPerImage.take(it).sum()).take(usersPerImage[it]).joinToString("") + padding + HTML_FOOTERS)
             generator.saveAsImage(pathNumbered)
             val image = ImageIO.read(File(pathNumbered)).run{
                 getSubimage(4, 3, width - 8, height - 6)

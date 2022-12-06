@@ -126,7 +126,6 @@ suspend fun updateLeaderboard(kord: Kord) {
     val year = dotenv()["YEAR"]
     val code = dotenv()["CODE"]
 
-    return
     // get new leaderboard
     println("Fetching new leaderboard")
     val json = client.get("https://adventofcode.com/$year/leaderboard/private/view/$code.json") {

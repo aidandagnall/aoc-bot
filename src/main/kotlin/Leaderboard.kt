@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.io.File
+import java.lang.Integer.min
 import javax.imageio.ImageIO
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -22,7 +23,7 @@ data class Leaderboard(
 
         // standard HTML header, load AoC CSS, and add column labels
         const val HTML_HEADERS = """<html style="width: 100%; height: 100%; margin: 0px; padding: 0px; overflow-x: hidden;"> <head><link href="//fonts.googleapis.com/css?family=Source+Code+Pro:300&amp;subset=latin,latin-ext" rel="stylesheet" type="text/css"><link href="https://adventofcode.com/static/style.css?30" rel="stylesheet" type="text/css"> <body style="width: 100%; height: 100%; margin: 0px; padding: 0px; overflow-x: hidden;"> <main> <article> <table> <thead></thead><tbody> """
-        const val HEADINGS = """ <tr><div class="privboard-row"><td/><td/><span class="privboard-days"> <td><a href="/2021/day/1"><br>1</a></td> <td><a href="/2021/day/1"><br>2</a></td> <td><a href="/2021/day/1"><br>3</a></td> <td><a href="/2021/day/1"><br>4</a></td> <td><a href="/2021/day/1"><br>5</a></td> <td><a href="/2021/day/1"><br>6</a></td> <td><a href="/2021/day/1"><br>7</a></td> <td><a href="/2021/day/1"><br>8</a></td> <td><a href="/2021/day/1"><br>9</a></td> <td><a href="/2021/day/1">1 <br> 0</a></td> <td><a href="/2021/day/1">1 <br> 1</a></td> <td><a href="/2021/day/1">1 <br> 2</a></td> <td><a href="/2021/day/1">1 <br> 3</a></td> <td><a href="/2021/day/1">1 <br> 4</a></td> <td><a href="/2021/day/1">1 <br> 5</a></td> <td><a href="/2021/day/1">1 <br> 6</a></td> <td><a href="/2021/day/1">1 <br> 7</a></td> <td><a href="/2021/day/1">1 <br> 8</a></td> <td><a href="/2021/day/1">1 <br> 9</a></td> <td><a href="/2021/day/1">2 <br> 0</a></td> <td><a href="/2021/day/1">2 <br> 1</a></td> <td><a href="/2021/day/1">2 <br> 2</a></td> <td><a href="/2021/day/1">2 <br> 3</a></td> <td><a href="/2021/day/1">2 <br> 4</a></td> <td><a href="/2021/day/1">2 <br> 5</a></td><td style="color: #0f0f23">anonymous user #1111111</td></tr>"""
+        const val HEADINGS = """ <tr><div class="privboard-row"><td/><td/><span class="privboard-days"> <td><a href="/2021/day/1"><br>1</a></td> <td><a href="/2021/day/1"><br>2</a></td> <td><a href="/2021/day/1"><br>3</a></td> <td><a href="/2021/day/1"><br>4</a></td> <td><a href="/2021/day/1"><br>5</a></td> <td><a href="/2021/day/1"><br>6</a></td> <td><a href="/2021/day/1"><br>7</a></td> <td><a href="/2021/day/1"><br>8</a></td> <td><a href="/2021/day/1"><br>9</a></td> <td><a href="/2021/day/1">1 <br> 0</a></td> <td><a href="/2021/day/1">1 <br> 1</a></td> <td><a href="/2021/day/1">1 <br> 2</a></td> <td><a href="/2021/day/1">1 <br> 3</a></td> <td><a href="/2021/day/1">1 <br> 4</a></td> <td><a href="/2021/day/1">1 <br> 5</a></td> <td><a href="/2021/day/1">1 <br> 6</a></td> <td><a href="/2021/day/1">1 <br> 7</a></td> <td><a href="/2021/day/1">1 <br> 8</a></td> <td><a href="/2021/day/1">1 <br> 9</a></td> <td><a href="/2021/day/1">2 <br> 0</a></td> <td><a href="/2021/day/1">2 <br> 1</a></td> <td><a href="/2021/day/1">2 <br> 2</a></td> <td><a href="/2021/day/1">2 <br> 3</a></td> <td><a href="/2021/day/1">2 <br> 4</a></td> <td><a href="/2021/day/1">2 <br> 5</a></td><td class="privboard-name" style="color: #0f0f23">anonymous user #1111111</td></tr>"""
         const val HTML_FOOTERS = """</tbody></table></article></main></body></html>"""
 
         fun fromFile(path: String = "leaderboard.json"): Leaderboard? {
@@ -34,7 +35,7 @@ data class Leaderboard(
         }
     }
 
-    fun createImage(path: String = "leaderboard.png", count: Int = DEFAULT_LEADERBOARD_SIZE, scoring: SCORING = SCORING.OFFICIAL) {
+    fun createImage(path: String = "leaderboard.png", requestedCount: Int? = DEFAULT_LEADERBOARD_SIZE, scoring: SCORING = SCORING.OFFICIAL) {
 
         File(".").walkTopDown()
             .filter { it.name.startsWith("leaderboard") && it.extension == "png" }
@@ -42,6 +43,7 @@ data class Leaderboard(
 
         val generator = HtmlImageGenerator()
 
+        val count = min(requestedCount ?: DEFAULT_LEADERBOARD_SIZE, members.values.filter { it.getScore(scoring) != 0.0 }.size)
         // get list of list of users, with a list for each score
         val users = members.values.asSequence()
             // ignore users with no score
@@ -95,13 +97,8 @@ data class Leaderboard(
                 }
             }.flatten()
 
-
-
-        println("Creating $numberOfImages of images with $usersPerImage in each")
-
         (0 until numberOfImages).forEach {
             val pathNumbered = "leaderboard$it.png"
-            println("Creating image $it, dropping first ${usersPerImage.take(it).sum()} and taking the next ${usersPerImage[it]}")
             generator.loadHtml(HTML_HEADERS + HEADINGS + userRows.drop( usersPerImage.take(it).sum()).take(usersPerImage[it]).joinToString("") + HTML_FOOTERS)
             generator.saveAsImage(pathNumbered)
             val image = ImageIO.read(File(pathNumbered)).run{

@@ -102,13 +102,11 @@ suspend fun main() {
             else -> Leaderboard.SCORING.DAY_BASED
         }
         val count = command.integers["users"]
-        println(File(".").walkTopDown().toList())
-        Leaderboard.fromFile()?.createImage(count = count?.toInt() ?: Leaderboard.DEFAULT_LEADERBOARD_SIZE, scoring = scoring)
+        Leaderboard.fromFile()?.createImage(requestedCount = count?.toInt(), scoring = scoring)
         response.respond {
             files = File(".").walkTopDown().filter { it.name.startsWith("leaderboard")  && it.extension == "png"}
                 .sortedBy { it.name }
                 .map {
-                    println(it.name)
                     NamedFile(it.name, ChannelProvider { it.inputStream().toByteReadChannel() })
                 }.toMutableList()
 //            )
@@ -128,6 +126,7 @@ suspend fun updateLeaderboard(kord: Kord) {
     val year = dotenv()["YEAR"]
     val code = dotenv()["CODE"]
 
+    return
     // get new leaderboard
     println("Fetching new leaderboard")
     val json = client.get("https://adventofcode.com/$year/leaderboard/private/view/$code.json") {

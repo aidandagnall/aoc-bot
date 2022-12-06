@@ -102,7 +102,7 @@ data class Leaderboard(
             generator.loadHtml(HTML_HEADERS + HEADINGS + userRows.drop( usersPerImage.take(it).sum()).take(usersPerImage[it]).joinToString("") + HTML_FOOTERS)
             generator.saveAsImage(pathNumbered)
             val image = ImageIO.read(File(pathNumbered)).run{
-                getSubimage(0, 0, width - 3, height - 3)
+                getSubimage(4, 3, width - 4, height - 3)
             }
             ImageIO.write(image, "png", File(pathNumbered))
         }

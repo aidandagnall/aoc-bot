@@ -35,7 +35,10 @@ data class Leaderboard(
         }
     }
 
-    fun createImage(path: String = "leaderboard.png", requestedCount: Int? = DEFAULT_LEADERBOARD_SIZE, scoring: SCORING = SCORING.OFFICIAL) {
+    fun createImage(
+        requestedCount: Int? = DEFAULT_LEADERBOARD_SIZE,
+        scoring: SCORING = SCORING.OFFICIAL,
+    ) {
 
         File(".").walkTopDown()
             .filter { it.name.startsWith("leaderboard") && it.extension == "png" }
@@ -102,7 +105,7 @@ data class Leaderboard(
             generator.loadHtml(HTML_HEADERS + HEADINGS + userRows.drop( usersPerImage.take(it).sum()).take(usersPerImage[it]).joinToString("") + HTML_FOOTERS)
             generator.saveAsImage(pathNumbered)
             val image = ImageIO.read(File(pathNumbered)).run{
-                getSubimage(4, 3, width - 4, height - 3)
+                getSubimage(4, 3, width - 8, height - 6)
             }
             ImageIO.write(image, "png", File(pathNumbered))
         }

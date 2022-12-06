@@ -102,14 +102,16 @@ suspend fun main() {
             else -> Leaderboard.SCORING.DAY_BASED
         }
         val count = command.integers["users"]
-
-        Leaderboard.fromFile()?.createImage(count = count?.toInt(), scoring = scoring)
+        println(File(".").walkTopDown().toList())
+        Leaderboard.fromFile()?.createImage(count = count?.toInt() ?: Leaderboard.DEFAULT_LEADERBOARD_SIZE, scoring = scoring)
         response.respond {
-            files = mutableListOf(
-                NamedFile(
-                    "leaderboard.png",
-                    ChannelProvider { File("leaderboard.png").inputStream().toByteReadChannel() })
-            )
+            files = File(".").walkTopDown().filter { it.name.startsWith("leaderboard")  && it.extension == "png"}
+                .sortedBy { it.name }
+                .map {
+                    println(it.name)
+                    NamedFile(it.name, ChannelProvider { it.inputStream().toByteReadChannel() })
+                }.toMutableList()
+//            )
         }
     }
 

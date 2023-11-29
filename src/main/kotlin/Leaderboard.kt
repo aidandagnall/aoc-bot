@@ -45,12 +45,14 @@ data class Leaderboard(
             .forEach { it.delete() }
 
         val generator = HtmlImageGenerator()
+        val hasStarted = members.values.any { it.getScore(scoring) > 0 }
+        val minCountToInclude = if(hasStarted) members.values.filter { it.getScore(scoring) > 0}.size else DEFAULT_LEADERBOARD_SIZE
 
-        val count = min(requestedCount ?: DEFAULT_LEADERBOARD_SIZE, members.values.filter { it.getScore(scoring) != 0.0 }.size)
+        val count = min(requestedCount ?: DEFAULT_LEADERBOARD_SIZE, minCountToInclude)
         // get list of list of users, with a list for each score
         val users = members.values.asSequence()
             // ignore users with no score
-            .filter { it.getScore(scoring) > 0 }
+            .filter { !(hasStarted && it.getScore(scoring) == 0.0) }
             // highest score first
             .sortedWith( compareByDescending<Member> { it.getScore(scoring) }.thenBy { it.name } )
             // take only the requested number of members

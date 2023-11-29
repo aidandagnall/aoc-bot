@@ -41,7 +41,7 @@ suspend fun main() {
                         .getLastModifiedTime()
                         .toInstant()
                         .toKotlinInstant()
-                } else Clock.System.now()
+                } else Clock.System.now().minus(15, DateTimeUnit.MINUTE)
             while (true) {
                 if (time.until(Clock.System.now(), DateTimeUnit.MINUTE) >= 15) {
                     time = Clock.System.now()
@@ -56,7 +56,6 @@ suspend fun main() {
 
     // create /leaderboard command
     kord.createGuildChatInputCommand(
-//        guildId = Snowflake(1044932088287207457),
         guildId = Snowflake(dotenv()["SERVER"]),
         name = "leaderboard",
         description = "Show the live leaderboard (up to 15 minute delay)",
@@ -103,13 +102,23 @@ suspend fun main() {
         }
         val count = command.integers["users"]
         Leaderboard.fromFile()?.createImage(requestedCount = count?.toInt(), scoring = scoring)
+
+        val images = File(".").walkTopDown().filter { it.name.startsWith("leaderboard")  && it.extension == "png"}
+            .sortedBy { it.name }
+            .map {
+                NamedFile(it.name, ChannelProvider { it.inputStream().toByteReadChannel() })
+            }.toMutableList()
+
+        if (images.isEmpty()) {
+            response.respond { content = "No images found." }
+            return@on
+        }
         response.respond {
             files = File(".").walkTopDown().filter { it.name.startsWith("leaderboard")  && it.extension == "png"}
                 .sortedBy { it.name }
                 .map {
                     NamedFile(it.name, ChannelProvider { it.inputStream().toByteReadChannel() })
                 }.toMutableList()
-//            )
         }
     }
 
@@ -175,7 +184,6 @@ suspend fun updateLeaderboard(kord: Kord) {
                     }
                 }
             }
-
         }
     }
 }

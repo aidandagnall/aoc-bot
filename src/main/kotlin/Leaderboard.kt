@@ -46,8 +46,11 @@ data class Leaderboard(
 
         val generator = HtmlImageGenerator()
         val hasStarted = members.values.any { it.getScore(scoring) > 0 }
+
+        println("has started -> $hasStarted")
         val minCountToInclude = if(hasStarted) members.values.filter { it.getScore(scoring) > 0}.size else DEFAULT_LEADERBOARD_SIZE
         val count = min(requestedCount ?: DEFAULT_LEADERBOARD_SIZE, minCountToInclude)
+        println("count -> $count")
 
         // get list of list of users, with a list for each score
         val users = members.values.asSequence()
@@ -59,6 +62,7 @@ data class Leaderboard(
             .take(count)
             .groupBy { it.getScore(scoring) }
             .values.toList()
+        println("users -> $users")
 
         val numberOfImages = ceil((count).toFloat() / DEFAULT_LEADERBOARD_SIZE).toInt()
         val usersPerImage = (0 until numberOfImages).map {

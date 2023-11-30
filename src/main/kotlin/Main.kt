@@ -80,7 +80,7 @@ suspend fun main() {
     var lastLeaderboardCommand = Clock.System.now().minus(cooldown ?: 0, DateTimeUnit.SECOND)
     // listen for slash commands
     kord.on<GuildChatInputCommandInteractionCreateEvent> {
-
+        println("GOT COMMAND")
         val timeSinceLastCommand = lastLeaderboardCommand.until(Clock.System.now(), DateTimeUnit.SECOND)
         if (cooldown != null && timeSinceLastCommand < cooldown) {
             interaction.respondEphemeral {
@@ -89,8 +89,10 @@ suspend fun main() {
             return@on
         }
 
+        println("Getting response")
         val response = interaction.deferPublicResponse()
         val command = interaction.command
+        println("Got response")
 
         lastLeaderboardCommand = Clock.System.now()
 
@@ -101,7 +103,9 @@ suspend fun main() {
             else -> Leaderboard.SCORING.DAY_BASED
         }
         val count = command.integers["users"]
+        println("Creating image")
         Leaderboard.fromFile()?.createImage(requestedCount = count?.toInt(), scoring = scoring)
+        println("Created image")
 
         val images = File(".").walkTopDown().filter { it.name.startsWith("leaderboard")  && it.extension == "png"}
             .sortedBy { it.name }

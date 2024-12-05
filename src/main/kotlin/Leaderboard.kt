@@ -9,7 +9,7 @@ import javax.imageio.ImageIO
 import kotlin.math.ceil
 import kotlin.math.floor
 
-@Serializable
+@Serializable()
 data class Leaderboard(
     val event: String,
     @SerialName("owner_id")
@@ -20,15 +20,26 @@ data class Leaderboard(
     companion object {
 
         const val DEFAULT_LEADERBOARD_SIZE = 20
+        val json = Json { ignoreUnknownKeys = true }
 
         // standard HTML header, load AoC CSS, and add column labels
-        const val HTML_HEADERS = """<html style="width: 100%; height: 100%; margin: 0px; padding: 0px; overflow-x: hidden;"> <head><link href="//fonts.googleapis.com/css?family=Source+Code+Pro:300&amp;subset=latin,latin-ext" rel="stylesheet" type="text/css"><link href="https://adventofcode.com/static/style.css?30" rel="stylesheet" type="text/css"> <body style="width: 100%; height: 100%; margin: 0px; padding: 0px; overflow-x: hidden;"> <main> <article> <table> <thead></thead><tbody> """
+        const val HTML_HEADERS = """<html style="width: 100%; height: 100%; margin: 0px; padding: 0px; overflow-x: hidden;"> <head>
+            <link href="//fonts.googleapis.com/css?family=Source+Code+Pro:300&amp;subset=latin,latin-ext" rel="stylesheet" type="text/css">
+            <link href="https://adventofcode.com/static/style.css?30" rel="stylesheet" type="text/css">
+            <style
+            @font-face {
+                font-family: "Source Code Pro";
+                src: url("/usr/local/share/fonts/SourceCodePro-Regular.ttf");
+            }
+            </style>
+            </head>
+            <body style="width: 100%; height: 100%; margin: 0px; padding: 0px; overflow-x: hidden;"> <main> <article> <table> <thead></thead><tbody> """
         const val HEADINGS = """ <tr><div class="privboard-row"><td/><td/><span class="privboard-days"> <td><a href="/2021/day/1"><br>1</a></td> <td><a href="/2021/day/1"><br>2</a></td> <td><a href="/2021/day/1"><br>3</a></td> <td><a href="/2021/day/1"><br>4</a></td> <td><a href="/2021/day/1"><br>5</a></td> <td><a href="/2021/day/1"><br>6</a></td> <td><a href="/2021/day/1"><br>7</a></td> <td><a href="/2021/day/1"><br>8</a></td> <td><a href="/2021/day/1"><br>9</a></td> <td><a href="/2021/day/1">1 <br> 0</a></td> <td><a href="/2021/day/1">1 <br> 1</a></td> <td><a href="/2021/day/1">1 <br> 2</a></td> <td><a href="/2021/day/1">1 <br> 3</a></td> <td><a href="/2021/day/1">1 <br> 4</a></td> <td><a href="/2021/day/1">1 <br> 5</a></td> <td><a href="/2021/day/1">1 <br> 6</a></td> <td><a href="/2021/day/1">1 <br> 7</a></td> <td><a href="/2021/day/1">1 <br> 8</a></td> <td><a href="/2021/day/1">1 <br> 9</a></td> <td><a href="/2021/day/1">2 <br> 0</a></td> <td><a href="/2021/day/1">2 <br> 1</a></td> <td><a href="/2021/day/1">2 <br> 2</a></td> <td><a href="/2021/day/1">2 <br> 3</a></td> <td><a href="/2021/day/1">2 <br> 4</a></td> <td><a href="/2021/day/1">2 <br> 5</a></td><td style="color: #0f0f23">anonymous user #1111111</td></tr>"""
         const val HTML_FOOTERS = """</tbody></table></article></main></body></html>"""
 
         fun fromFile(path: String = "leaderboard.json"): Leaderboard? {
             return if (File(path).exists()) {
-                Json.decodeFromString<Leaderboard>(
+                json.decodeFromString<Leaderboard>(
                     File(path)
                     .inputStream().bufferedReader().use { it.readText() })
             } else null

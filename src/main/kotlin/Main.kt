@@ -129,6 +129,8 @@ suspend fun main() {
     kord.login()
 }
 
+val json = Json { ignoreUnknownKeys = true }
+
 suspend fun updateLeaderboard(kord: Kord) {
 
     val filename = "leaderboard.json"
@@ -141,19 +143,19 @@ suspend fun updateLeaderboard(kord: Kord) {
 
     // get new leaderboard
     println("Fetching new leaderboard")
-    val json = client.get("https://adventofcode.com/$year/leaderboard/private/view/$code.json") {
+    val body = client.get("https://adventofcode.com/$year/leaderboard/private/view/$code.json") {
         cookie(name = "session", value = dotenv()["COOKIE"])
         userAgent(dotenv()["AGENT"])
     }.body<String>()
 
-    File(filename).writeText(json)
+    File(filename).writeText(body)
     File(filename).toPath().setLastModifiedTime(FileTime.from(Clock.System.now().toJavaInstant()))
 
     if (oldLeaderboard == null) {
         return
     }
 
-    val newLeaderboard = Json.decodeFromString<Leaderboard>(json)
+    val newLeaderboard = json.decodeFromString<Leaderboard>(body)
 
     // if no channel defined then don't print updates
     if (dotenv()["CHANNEL"] == "")
